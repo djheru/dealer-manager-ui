@@ -80,8 +80,8 @@ export class PipelineStack extends Stack {
         actionName: 'GitHub',
         output: sourceArtifact,
         oauthToken: SecretValue.secretsManager('github-token'),
-        owner: 'superluminar-io',
-        repo: 'static-site',
+        owner: 'djheru',
+        repo: 'dealer-manager-ui',
         branch: 'main',
       }),
 
