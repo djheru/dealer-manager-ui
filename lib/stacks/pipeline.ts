@@ -79,7 +79,7 @@ export class PipelineStack extends Stack {
       sourceAction: new CodepipelineActions.GitHubSourceAction({
         actionName: 'GitHub',
         output: sourceArtifact,
-        oauthToken: SecretValue.secretsManager('github-token'),
+        oauthToken: SecretValue.secretsManager('personal-github-token'),
         owner: 'djheru',
         repo: 'dealer-manager-ui',
         branch: 'main',
