@@ -57,7 +57,6 @@ export class PipelineStack extends Stack {
           'yarn build',
           'yarn cdk synth',
         ],
-        primaryOutputDirectory: 'infrastructure',
       }),
     });
   }
