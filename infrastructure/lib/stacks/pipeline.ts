@@ -51,6 +51,7 @@ export class PipelineStack extends Stack {
           authentication: SecretValue.secretsManager('personal-github-token'),
         }),
         commands: [
+          'cd ./infrastructure',
           'ls -lah',
           'yarn install --frozen-lockfile',
           'yarn build',
