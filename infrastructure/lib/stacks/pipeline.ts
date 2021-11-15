@@ -52,7 +52,7 @@ export class PipelineStack extends Stack {
         }),
         commands: [
           'cd ./infrastructure',
-          'ls -lah',
+          'ls -laht',
           'yarn install --frozen-lockfile',
           'yarn build',
           'yarn cdk synth',
