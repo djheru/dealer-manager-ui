@@ -34,7 +34,6 @@ variable`,
   },
   environmentName,
   hostedZoneName,
-  stackName: stackId,
 };
 
 new PipelineStack(app, stackId, pipelineStackProps);
