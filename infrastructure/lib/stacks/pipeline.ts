@@ -45,11 +45,13 @@ export class PipelineStack extends Stack {
 
   private buildCodePipeline() {
     return new CodePipeline(this, 'Pipeline', {
+      pipelineName: `${this.id}-pipeline`,
       synth: new ShellStep('Synth', {
         input: CodePipelineSource.gitHub('djheru/dealer-manager-ui', 'main', {
           authentication: SecretValue.secretsManager('personal-github-token'),
         }),
         commands: [
+          'ls -lah',
           'yarn install --frozen-lockfile',
           'yarn build',
           'yarn cdk synth',
