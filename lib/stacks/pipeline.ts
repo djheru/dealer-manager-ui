@@ -8,9 +8,11 @@ import {
   StackProps,
 } from '@aws-cdk/core';
 import {
+  CdkPipeline,
   CodePipeline,
   CodePipelineSource,
   ShellStep,
+  SimpleSynthAction,
 } from '@aws-cdk/pipelines';
 import * as CodeBuild from '@aws-cdk/aws-codebuild';
 import { Bucket } from '@aws-cdk/aws-s3';
@@ -32,7 +34,14 @@ export class PipelineStack extends Stack {
   ) {
     super(scope, id, props);
 
-    const pipeline = this.buildCodePipeline();
+    const sourceArtifact = new Codepipeline.Artifact();
+    const buildArtifact = new Codepipeline.Artifact();
+    const cloudAssemblyArtifact = new Codepipeline.Artifact();
+
+    const pipeline = this.buildCDKPipeline(
+      cloudAssemblyArtifact,
+      sourceArtifact
+    );
 
     const websiteInfrastructureStage = new WebsiteStage(
       this,
@@ -40,22 +49,45 @@ export class PipelineStack extends Stack {
       props
     );
 
-    pipeline.addStage(websiteInfrastructureStage);
+    pipeline.addApplicationStage(websiteInfrastructureStage);
+
+    const websiteBuildAndDeployStage = pipeline.addStage(
+      'WebsiteBuildAndDeployStage'
+    );
+
+    websiteBuildAndDeployStage.addActions(
+      this.buildAction(
+        sourceArtifact,
+        buildArtifact,
+        websiteBuildAndDeployStage.nextSequentialRunOrder()
+      ),
+      this.deployAction(
+        buildArtifact,
+        this.props.domainName,
+        websiteBuildAndDeployStage.nextSequentialRunOrder()
+      )
+    );
   }
 
-  private buildCodePipeline() {
-    return new CodePipeline(this, 'Pipeline', {
-      pipelineName: `${this.id}-pipeline`,
-      synth: new ShellStep('Synth', {
-        input: CodePipelineSource.gitHub('djheru/dealer-manager-ui', 'main', {
-          authentication: SecretValue.secretsManager('personal-github-token'),
-        }),
-        commands: [
-          'ls -laht',
-          'yarn install --frozen-lockfile',
-          'yarn build',
-          'yarn cdk synth',
-        ],
+  private buildCDKPipeline(
+    cloudAssemblyArtifact: Codepipeline.Artifact,
+    sourceArtifact: Codepipeline.Artifact
+  ) {
+    return new CdkPipeline(this, 'Pipeline', {
+      pipelineName: 'StaticWebsitePipeline',
+      cloudAssemblyArtifact,
+      sourceAction: new CodepipelineActions.GitHubSourceAction({
+        actionName: 'GitHub',
+        output: sourceArtifact,
+        oauthToken: SecretValue.secretsManager('github-token'),
+        owner: 'superluminar-io',
+        repo: 'static-site',
+        branch: 'main',
+      }),
+
+      synthAction: SimpleSynthAction.standardYarnSynth({
+        sourceArtifact,
+        cloudAssemblyArtifact,
       }),
     });
   }
