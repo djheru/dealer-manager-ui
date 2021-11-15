@@ -23,8 +23,8 @@ const domainName =
 const pipelineStackProps: PipelineStackProps = {
   description: `Summary: This stack is responsible for handling the dealer-manager-ui infrastructure.
 
-Deployment: This stack supports deployments to the standard environments. The stack 
-can be deployed to a custom environment (e.g. a developer environment) by ensuring 
+Deployment: This stack supports deployments to the standard environments (e.g. dev, prod, test, etc).
+The stack can be deployed to a custom environment (e.g. a developer environment) by ensuring 
 that the desired environment name (e.g. ${environmentName}) is set in the $CDK_ENV environment 
 variable`,
   domainName,
@@ -34,6 +34,7 @@ variable`,
   },
   environmentName,
   hostedZoneName,
+  stackName: stackId,
 };
 
 new PipelineStack(app, stackId, pipelineStackProps);

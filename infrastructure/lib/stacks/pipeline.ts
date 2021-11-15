@@ -7,7 +7,11 @@ import {
   Stack,
   StackProps,
 } from '@aws-cdk/core';
-import { CdkPipeline, SimpleSynthAction } from '@aws-cdk/pipelines';
+import {
+  CodePipeline,
+  CodePipelineSource,
+  ShellStep,
+} from '@aws-cdk/pipelines';
 import * as CodeBuild from '@aws-cdk/aws-codebuild';
 import { Bucket } from '@aws-cdk/aws-s3';
 import { WebsiteStage } from '../stages/website';
@@ -21,9 +25,6 @@ export interface PipelineStackProps extends StackProps {
 }
 
 export class PipelineStack extends Stack {
-  readonly hostedZoneName = 'alst.superluminar.io';
-  readonly hostedZoneId = 'Z06582792RO4T9WZ06BUN';
-
   constructor(
     scope: Construct,
     public readonly id: string,
@@ -31,67 +32,29 @@ export class PipelineStack extends Stack {
   ) {
     super(scope, id, props);
 
-    const sourceArtifact = new Codepipeline.Artifact();
-    const buildArtifact = new Codepipeline.Artifact();
-    const cloudAssemblyArtifact = new Codepipeline.Artifact();
-
-    const pipeline = this.buildCDKPipeline(
-      cloudAssemblyArtifact,
-      sourceArtifact
-    );
+    const pipeline = this.buildCodePipeline();
 
     const websiteInfrastructureStage = new WebsiteStage(
       this,
       'WebsiteInfrastructureStage',
-      {
-        hostedZoneId: this.hostedZoneId,
-        ...props,
-      }
+      props
     );
 
-    pipeline.addApplicationStage(websiteInfrastructureStage);
-
-    const websiteBuildAndDeployStage = pipeline.addStage(
-      'WebsiteBuildAndDeployStage'
-    );
-
-    websiteBuildAndDeployStage.addActions(
-      this.buildAction(
-        sourceArtifact,
-        buildArtifact,
-        websiteBuildAndDeployStage.nextSequentialRunOrder()
-      ),
-      this.deployAction(
-        buildArtifact,
-        this.props.domainName,
-        websiteBuildAndDeployStage.nextSequentialRunOrder()
-      )
-    );
+    pipeline.addStage(websiteInfrastructureStage);
   }
 
-  private buildCDKPipeline(
-    cloudAssemblyArtifact: Codepipeline.Artifact,
-    sourceArtifact: Codepipeline.Artifact
-  ) {
-    return new CdkPipeline(this, 'Pipeline', {
-      // The pipeline name
-      pipelineName: 'StaticWebsitePipeline',
-      cloudAssemblyArtifact,
-
-      // Where the source can be found
-      sourceAction: new CodepipelineActions.GitHubSourceAction({
-        actionName: 'GitHub',
-        output: sourceArtifact,
-        oauthToken: SecretValue.secretsManager('github-token'),
-        owner: 'superluminar-io',
-        repo: 'static-site',
-        branch: 'main',
-      }),
-
-      synthAction: SimpleSynthAction.standardYarnSynth({
-        sourceArtifact,
-        cloudAssemblyArtifact,
-        subdirectory: 'infrastructure',
+  private buildCodePipeline() {
+    return new CodePipeline(this, 'Pipeline', {
+      synth: new ShellStep('Synth', {
+        input: CodePipelineSource.gitHub('djheru/dealer-manager-ui', 'main', {
+          authentication: SecretValue.secretsManager('personal-github-token'),
+        }),
+        commands: [
+          'yarn install --frozen-lockfile',
+          'yarn build',
+          'yarn cdk synth',
+        ],
+        primaryOutputDirectory: 'infrastructure',
       }),
     });
   }
@@ -109,7 +72,7 @@ export class PipelineStack extends Stack {
       project: new CodeBuild.PipelineProject(this, 'StaticSiteBuildProject', {
         projectName: 'StaticSiteBuildProject',
         buildSpec: CodeBuild.BuildSpec.fromSourceFilename(
-          'frontend/buildspec.yml'
+          'website/buildspec.yml'
         ),
         environment: {
           buildImage: CodeBuild.LinuxBuildImage.STANDARD_4_0,

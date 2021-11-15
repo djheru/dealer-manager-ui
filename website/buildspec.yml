@@ -1,0 +1,21 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 12
+    commands:
+      - cd frontend
+      - yarn install
+  build:
+    commands:
+      - yarn build
+
+artifacts:
+  base-directory: website/build
+  files:
+    - '**/*'
+
+cache:
+  paths:
+    - 'website/node_modules/**/*'
