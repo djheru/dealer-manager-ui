@@ -6,7 +6,7 @@ import * as CodeBuild from '@aws-cdk/aws-codebuild';
 import { Bucket } from '@aws-cdk/aws-s3';
 import { WebsiteStage } from '../stages/website';
 import { pascalCase } from 'pascal-case';
-import { PolicyStatement } from '@aws-cdk/aws-iam';
+import { Effect, PolicyStatement } from '@aws-cdk/aws-iam';
 
 export type Environment = 'dev' | 'prod' | 'staging' | 'test' | string;
 
@@ -87,6 +87,7 @@ export class PipelineStack extends Stack {
       new PolicyStatement({
         actions: ['route53:ListHostedZonesByName'],
         resources: ['*'],
+        effect: Effect.ALLOW,
       })
     );
     return pipeline;
