@@ -5,14 +5,15 @@ import { PipelineStack, PipelineStackProps } from '../lib/stacks/pipeline';
 
 const app = new cdk.App();
 const {
-  AWS_DEFAULT_ACCOUNT_ID: awsDefaultAccount = '',
-  AWS_DEFAULT_REGION: awsDefaultRegion = '',
-  CDK_DEFAULT_ACCOUNT: cdkDefaultAccount = '',
-  CDK_DEFAULT_REGION: cdkDefaultRegion = '',
+  // AWS_DEFAULT_ACCOUNT_ID: awsDefaultAccount = '',
+  // AWS_DEFAULT_REGION: awsDefaultRegion = '',
+  // CDK_DEFAULT_ACCOUNT: cdkDefaultAccount = '',
+  // CDK_DEFAULT_REGION: cdkDefaultRegion = '',
   CDK_ENV: environmentName = 'dev',
 } = process.env;
 
-const hostedZoneName = 'di-shared-core.net';
+const hostedZoneName = 'dev.di-shared-core.net';
+const hostedZoneId = 'Z07238932LH0OXJCREPVH';
 const websiteName = 'dealers';
 const stackId = `${websiteName}-${environmentName}`;
 const domainName =
@@ -28,11 +29,12 @@ The stack can be deployed to a custom environment (e.g. a developer environment)
 that the desired environment name (e.g. ${environmentName}) is set in the $CDK_ENV environment 
 variable`,
   domainName,
-  env: {
-    account: cdkDefaultAccount || awsDefaultAccount,
-    region: cdkDefaultRegion || awsDefaultRegion,
-  },
+  // env: {
+  //   account: cdkDefaultAccount || awsDefaultAccount,
+  //   region: cdkDefaultRegion || awsDefaultRegion,
+  // },
   environmentName,
+  hostedZoneId,
   hostedZoneName,
 };
 

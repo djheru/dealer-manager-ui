@@ -12,6 +12,7 @@ export type Environment = 'dev' | 'prod' | 'staging' | 'test' | string;
 export interface PipelineStackProps extends StackProps {
   environmentName: Environment;
   domainName: string;
+  hostedZoneId: string;
   hostedZoneName: string;
 }
 

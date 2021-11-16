@@ -8,6 +8,7 @@ import { CloudFrontTarget } from '@aws-cdk/aws-route53-targets';
 
 export interface WebsiteStackProps extends StackProps {
   domainName: string;
+  hostedZoneId: string;
   hostedZoneName: string;
 }
 
@@ -24,10 +25,14 @@ export class WebsiteStack extends Stack {
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
     });
 
-    const zone = Route53.HostedZone.fromLookup(this, 'HostedZone', {
-      domainName: this.props.hostedZoneName,
-      privateZone: false,
-    });
+    const zone = Route53.PublicHostedZone.fromHostedZoneAttributes(
+      this,
+      'HostedZone',
+      {
+        hostedZoneId: props.hostedZoneId,
+        zoneName: props.hostedZoneName,
+      }
+    );
 
     const certificate = new DnsValidatedCertificate(this, 'WebsiteCert', {
       domainName: props.domainName,
