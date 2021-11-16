@@ -76,7 +76,7 @@ export class PipelineStack extends Stack {
         output: sourceArtifact,
         oauthToken: SecretValue.secretsManager('personal-github-token'),
         owner: 'djheru',
-        repo: 'static-site',
+        repo: 'dealer-manager-ui',
         branch: 'main',
       }),
 
