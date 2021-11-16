@@ -84,6 +84,7 @@ export class PipelineStack extends Stack {
       synthAction: SimpleSynthAction.standardYarnSynth({
         sourceArtifact,
         cloudAssemblyArtifact,
+        subdirectory: 'infrastructure',
       }),
     });
   }
