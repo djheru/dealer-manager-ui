@@ -64,6 +64,18 @@ export class PipelineStack extends Stack {
     sourceArtifact: Codepipeline.Artifact
   ) {
     const pipelineId = pascalCase(`${this.id}-pipeline`);
+    const synthAction = SimpleSynthAction.standardYarnSynth({
+      sourceArtifact,
+      cloudAssemblyArtifact,
+      subdirectory: 'infrastructure',
+    });
+    synthAction.grantPrincipal.addToPrincipalPolicy(
+      new PolicyStatement({
+        actions: ['route53:ListHostedZonesByName'],
+        resources: ['*'],
+        effect: Effect.ALLOW,
+      })
+    );
     const pipeline = new CdkPipeline(this, pipelineId, {
       pipelineName: pipelineId,
       cdkCliVersion: '1.128.0',
@@ -77,11 +89,7 @@ export class PipelineStack extends Stack {
         branch: 'main',
       }),
 
-      synthAction: SimpleSynthAction.standardYarnSynth({
-        sourceArtifact,
-        cloudAssemblyArtifact,
-        subdirectory: 'infrastructure',
-      }),
+      synthAction,
     });
     pipeline.codePipeline.addToRolePolicy(
       new PolicyStatement({
