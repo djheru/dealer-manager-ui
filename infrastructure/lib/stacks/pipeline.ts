@@ -6,6 +6,7 @@ import * as CodeBuild from '@aws-cdk/aws-codebuild';
 import { Bucket } from '@aws-cdk/aws-s3';
 import { WebsiteStage } from '../stages/website';
 import { pascalCase } from 'pascal-case';
+import { PolicyStatement } from '@aws-cdk/aws-iam';
 
 export type Environment = 'dev' | 'prod' | 'staging' | 'test' | string;
 
@@ -63,7 +64,7 @@ export class PipelineStack extends Stack {
     sourceArtifact: Codepipeline.Artifact
   ) {
     const pipelineId = pascalCase(`${this.id}-pipeline`);
-    return new CdkPipeline(this, pipelineId, {
+    const pipeline = new CdkPipeline(this, pipelineId, {
       pipelineName: pipelineId,
       cdkCliVersion: '1.128.0',
       cloudAssemblyArtifact,
@@ -82,6 +83,13 @@ export class PipelineStack extends Stack {
         subdirectory: 'infrastructure',
       }),
     });
+    pipeline.codePipeline.addToRolePolicy(
+      new PolicyStatement({
+        actions: ['route53:ListHostedZonesByName'],
+        resources: ['*'],
+      })
+    );
+    return pipeline;
   }
 
   private buildAction(
