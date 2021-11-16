@@ -65,6 +65,7 @@ export class PipelineStack extends Stack {
     const pipelineId = pascalCase(`pipeline-${this.props.environmentName}`);
     return new CdkPipeline(this, pipelineId, {
       pipelineName: pipelineId,
+      cdkCliVersion: '1.128.0',
       cloudAssemblyArtifact,
       sourceAction: new CodepipelineActions.GitHubSourceAction({
         actionName: 'GitHub',
