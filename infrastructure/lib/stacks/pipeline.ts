@@ -1,12 +1,6 @@
 import * as Codepipeline from '@aws-cdk/aws-codepipeline';
 import * as CodepipelineActions from '@aws-cdk/aws-codepipeline-actions';
-import {
-  // CfnOutput,
-  Construct,
-  SecretValue,
-  Stack,
-  StackProps,
-} from '@aws-cdk/core';
+import { Construct, SecretValue, Stack, StackProps } from '@aws-cdk/core';
 import { CdkPipeline, SimpleSynthAction } from '@aws-cdk/pipelines';
 import * as CodeBuild from '@aws-cdk/aws-codebuild';
 import { Bucket } from '@aws-cdk/aws-s3';
@@ -68,7 +62,7 @@ export class PipelineStack extends Stack {
     cloudAssemblyArtifact: Codepipeline.Artifact,
     sourceArtifact: Codepipeline.Artifact
   ) {
-    const pipelineId = pascalCase(`${this.id}-pipeline`);
+    const pipelineId = pascalCase(`pipeline-${this.props.environmentName}`);
     return new CdkPipeline(this, pipelineId, {
       pipelineName: pipelineId,
       cloudAssemblyArtifact,

@@ -2,7 +2,6 @@
 import 'source-map-support/register';
 import * as cdk from '@aws-cdk/core';
 import { PipelineStack, PipelineStackProps } from '../lib/stacks/pipeline';
-import { pascalCase } from 'pascal-case';
 
 const app = new cdk.App();
 const {
@@ -22,7 +21,7 @@ const domainName =
     : `${websiteName}.${environmentName}.${hostedZoneName}`;
 
 const pipelineStackProps: PipelineStackProps = {
-  description: `Summary: This stack is responsible for handling the dealer-manager-ui website infrastructure.
+  description: `Summary: This stack is responsible for handling the ${stackId} website infrastructure.
 
 Deployment: This stack supports deployments to the standard environments (e.g. dev, prod, test, etc).
 The stack can be deployed to a custom environment (e.g. a developer environment) by ensuring 
@@ -37,4 +36,4 @@ variable`,
   hostedZoneName,
 };
 
-new PipelineStack(app, pascalCase(stackId), pipelineStackProps);
+new PipelineStack(app, stackId, pipelineStackProps);
