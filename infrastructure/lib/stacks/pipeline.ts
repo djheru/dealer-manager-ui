@@ -69,13 +69,6 @@ export class PipelineStack extends Stack {
       cloudAssemblyArtifact,
       subdirectory: 'infrastructure',
     });
-    synthAction.grantPrincipal.addToPrincipalPolicy(
-      new PolicyStatement({
-        actions: ['route53:ListHostedZonesByName'],
-        resources: ['*'],
-        effect: Effect.ALLOW,
-      })
-    );
     const pipeline = new CdkPipeline(this, pipelineId, {
       pipelineName: pipelineId,
       cdkCliVersion: '1.128.0',
@@ -91,6 +84,15 @@ export class PipelineStack extends Stack {
 
       synthAction,
     });
+
+    synthAction.grantPrincipal.addToPrincipalPolicy(
+      new PolicyStatement({
+        actions: ['route53:ListHostedZonesByName'],
+        resources: ['*'],
+        effect: Effect.ALLOW,
+      })
+    );
+
     pipeline.codePipeline.addToRolePolicy(
       new PolicyStatement({
         actions: ['route53:ListHostedZonesByName'],
