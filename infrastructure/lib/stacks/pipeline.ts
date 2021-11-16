@@ -62,7 +62,7 @@ export class PipelineStack extends Stack {
     cloudAssemblyArtifact: Codepipeline.Artifact,
     sourceArtifact: Codepipeline.Artifact
   ) {
-    const pipelineId = pascalCase(`pipeline-${this.props.environmentName}`);
+    const pipelineId = `pipeline-${this.props.environmentName}`;
     return new CdkPipeline(this, pipelineId, {
       pipelineName: pipelineId,
       cdkCliVersion: '1.128.0',
