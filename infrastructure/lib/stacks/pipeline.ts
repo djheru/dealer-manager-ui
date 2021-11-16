@@ -7,16 +7,11 @@ import {
   Stack,
   StackProps,
 } from '@aws-cdk/core';
-import {
-  CdkPipeline,
-  CodePipeline,
-  CodePipelineSource,
-  ShellStep,
-  SimpleSynthAction,
-} from '@aws-cdk/pipelines';
+import { CdkPipeline, SimpleSynthAction } from '@aws-cdk/pipelines';
 import * as CodeBuild from '@aws-cdk/aws-codebuild';
 import { Bucket } from '@aws-cdk/aws-s3';
 import { WebsiteStage } from '../stages/website';
+import { pascalCase } from 'pascal-case';
 
 export type Environment = 'dev' | 'prod' | 'staging' | 'test' | string;
 
@@ -73,8 +68,9 @@ export class PipelineStack extends Stack {
     cloudAssemblyArtifact: Codepipeline.Artifact,
     sourceArtifact: Codepipeline.Artifact
   ) {
-    return new CdkPipeline(this, 'Pipeline', {
-      pipelineName: 'StaticWebsitePipeline',
+    const pipelineId = pascalCase(`${this.id}-pipeline`);
+    return new CdkPipeline(this, pipelineId, {
+      pipelineName: pipelineId,
       cloudAssemblyArtifact,
       sourceAction: new CodepipelineActions.GitHubSourceAction({
         actionName: 'GitHub',

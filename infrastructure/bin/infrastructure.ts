@@ -2,6 +2,7 @@
 import 'source-map-support/register';
 import * as cdk from '@aws-cdk/core';
 import { PipelineStack, PipelineStackProps } from '../lib/stacks/pipeline';
+import { pascalCase } from 'pascal-case';
 
 const app = new cdk.App();
 const {
@@ -13,7 +14,7 @@ const {
 } = process.env;
 
 const hostedZoneName = 'di-shared-core.net';
-const websiteName = 'dealer-manager';
+const websiteName = 'dealers';
 const stackId = `${websiteName}-${environmentName}`;
 const domainName =
   environmentName === 'prod'
@@ -36,4 +37,4 @@ variable`,
   hostedZoneName,
 };
 
-new PipelineStack(app, stackId, pipelineStackProps);
+new PipelineStack(app, pascalCase(stackId), pipelineStackProps);
