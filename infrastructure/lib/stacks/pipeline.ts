@@ -12,7 +12,6 @@ export type Environment = 'dev' | 'prod' | 'staging' | 'test' | string;
 export interface PipelineStackProps extends StackProps {
   environmentName: Environment;
   domainName: string;
-  hostedZoneId: string;
   hostedZoneName: string;
 }
 
@@ -63,7 +62,7 @@ export class PipelineStack extends Stack {
     cloudAssemblyArtifact: Codepipeline.Artifact,
     sourceArtifact: Codepipeline.Artifact
   ) {
-    const pipelineId = `pipeline-${this.props.environmentName}`;
+    const pipelineId = pascalCase(`${this.id}-pipeline`);
     return new CdkPipeline(this, pipelineId, {
       pipelineName: pipelineId,
       cdkCliVersion: '1.128.0',
