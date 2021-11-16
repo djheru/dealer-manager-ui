@@ -11,14 +11,17 @@ import { CdkPipeline, SimpleSynthAction } from '@aws-cdk/pipelines';
 import * as CodeBuild from '@aws-cdk/aws-codebuild';
 import { Bucket } from '@aws-cdk/aws-s3';
 import { WebsiteStage } from '../stages/website';
+import { BuildEnvironmentVariableType } from '@aws-cdk/aws-codebuild';
 
-/**
- * The stack that defines the application pipeline
- */
+const { CDK_ENV: environmentName = 'dev' } = process.env;
+
 export class PipelineStack extends Stack {
-  readonly domainName = 'dealers.dev.di-shared-core.net';
-  readonly hostedZoneName = 'dev.di-shared-core.net';
-  readonly hostedZoneId = 'Z07238932LH0OXJCREPVH';
+  readonly domainName =
+    environmentName === 'prod'
+      ? 'dealeradmin.di-shared-core.net'
+      : `${environmentName}-dealeradmin.di-shared-core.net`;
+  readonly hostedZoneName = 'di-shared-core.net';
+  readonly hostedZoneId = 'Z01382532ONSHBQK6LTCR';
 
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
@@ -83,6 +86,7 @@ export class PipelineStack extends Stack {
       synthAction: SimpleSynthAction.standardYarnSynth({
         sourceArtifact,
         cloudAssemblyArtifact,
+        copyEnvironmentVariables: ['CDK_ENV'],
         subdirectory: 'infrastructure',
       }),
     });
@@ -105,6 +109,12 @@ export class PipelineStack extends Stack {
         ),
         environment: {
           buildImage: CodeBuild.LinuxBuildImage.STANDARD_4_0,
+        },
+        environmentVariables: {
+          CDK_ENV: {
+            type: BuildEnvironmentVariableType.PLAINTEXT,
+            value: environmentName,
+          },
         },
       }),
     });

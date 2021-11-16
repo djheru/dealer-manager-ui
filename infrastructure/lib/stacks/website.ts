@@ -22,6 +22,11 @@ export class WebsiteStack extends Stack {
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
     });
 
+    // const zone = Route53.PublicHostedZone.fromLookup(this, 'HostedZone', {
+    //   domainName: props.hostedZoneName,
+    //   privateZone: false,
+    // });
+
     const zone = Route53.PublicHostedZone.fromHostedZoneAttributes(
       this,
       'HostedZone',
