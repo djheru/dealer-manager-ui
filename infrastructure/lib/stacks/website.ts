@@ -1,3 +1,4 @@
+//   {
 import { Stack, Construct, StackProps } from '@aws-cdk/core';
 import { Bucket, BlockPublicAccess } from '@aws-cdk/aws-s3';
 import { Distribution, ViewerProtocolPolicy } from '@aws-cdk/aws-cloudfront';
@@ -9,14 +10,11 @@ import { CloudFrontTarget } from '@aws-cdk/aws-route53-targets';
 export interface WebsiteStackProps extends StackProps {
   domainName: string;
   hostedZoneName: string;
+  hostedZoneId: string;
 }
 
 export class WebsiteStack extends Stack {
-  constructor(
-    scope: Construct,
-    public readonly id: string,
-    private readonly props: WebsiteStackProps
-  ) {
+  constructor(scope: Construct, id: string, props: WebsiteStackProps) {
     super(scope, id, props);
 
     const bucket = new Bucket(this, 'WebsiteBucket', {
@@ -24,10 +22,14 @@ export class WebsiteStack extends Stack {
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
     });
 
-    const zone = Route53.PublicHostedZone.fromLookup(this, 'HostedZone', {
-      privateZone: false,
-      domainName: this.props.hostedZoneName,
-    });
+    const zone = Route53.PublicHostedZone.fromHostedZoneAttributes(
+      this,
+      'HostedZone',
+      {
+        hostedZoneId: props.hostedZoneId,
+        zoneName: props.hostedZoneName,
+      }
+    );
 
     const certificate = new DnsValidatedCertificate(this, 'WebsiteCert', {
       domainName: props.domainName,

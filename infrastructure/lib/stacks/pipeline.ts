@@ -1,27 +1,26 @@
 import * as Codepipeline from '@aws-cdk/aws-codepipeline';
 import * as CodepipelineActions from '@aws-cdk/aws-codepipeline-actions';
-import { Construct, SecretValue, Stack, StackProps } from '@aws-cdk/core';
+import {
+  // CfnOutput,
+  Construct,
+  SecretValue,
+  Stack,
+  StackProps,
+} from '@aws-cdk/core';
 import { CdkPipeline, SimpleSynthAction } from '@aws-cdk/pipelines';
 import * as CodeBuild from '@aws-cdk/aws-codebuild';
 import { Bucket } from '@aws-cdk/aws-s3';
 import { WebsiteStage } from '../stages/website';
-import { pascalCase } from 'pascal-case';
-import { Effect, PolicyStatement } from '@aws-cdk/aws-iam';
 
-export type Environment = 'dev' | 'prod' | 'staging' | 'test' | string;
-
-export interface PipelineStackProps extends StackProps {
-  environmentName: Environment;
-  domainName: string;
-  hostedZoneName: string;
-}
-
+/**
+ * The stack that defines the application pipeline
+ */
 export class PipelineStack extends Stack {
-  constructor(
-    scope: Construct,
-    public readonly id: string,
-    private readonly props: PipelineStackProps
-  ) {
+  readonly domainName = 'dealers.dev.di-shared-core.net';
+  readonly hostedZoneName = 'dev.di-shared-core.net';
+  readonly hostedZoneId = 'Z07238932LH0OXJCREPVH';
+
+  constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
     const sourceArtifact = new Codepipeline.Artifact();
@@ -36,7 +35,12 @@ export class PipelineStack extends Stack {
     const websiteInfrastructureStage = new WebsiteStage(
       this,
       'WebsiteInfrastructureStage',
-      props
+      {
+        domainName: this.domainName,
+        hostedZoneName: this.hostedZoneName,
+        hostedZoneId: this.hostedZoneId,
+        ...props,
+      }
     );
 
     pipeline.addApplicationStage(websiteInfrastructureStage);
@@ -53,7 +57,7 @@ export class PipelineStack extends Stack {
       ),
       this.deployAction(
         buildArtifact,
-        this.props.domainName,
+        this.domainName,
         websiteBuildAndDeployStage.nextSequentialRunOrder()
       )
     );
@@ -63,44 +67,25 @@ export class PipelineStack extends Stack {
     cloudAssemblyArtifact: Codepipeline.Artifact,
     sourceArtifact: Codepipeline.Artifact
   ) {
-    const pipelineId = pascalCase(`${this.id}-pipeline`);
-    const synthAction = SimpleSynthAction.standardYarnSynth({
-      sourceArtifact,
+    return new CdkPipeline(this, 'Pipeline', {
+      pipelineName: 'StaticWebsitePipeline',
       cloudAssemblyArtifact,
-      subdirectory: 'infrastructure',
-    });
-    const pipeline = new CdkPipeline(this, pipelineId, {
-      pipelineName: pipelineId,
-      cdkCliVersion: '1.128.0',
-      cloudAssemblyArtifact,
+
       sourceAction: new CodepipelineActions.GitHubSourceAction({
         actionName: 'GitHub',
         output: sourceArtifact,
         oauthToken: SecretValue.secretsManager('personal-github-token'),
         owner: 'djheru',
-        repo: 'dealer-manager-ui',
+        repo: 'static-site',
         branch: 'main',
       }),
 
-      synthAction,
+      synthAction: SimpleSynthAction.standardYarnSynth({
+        sourceArtifact,
+        cloudAssemblyArtifact,
+        subdirectory: 'infrastructure',
+      }),
     });
-
-    synthAction.grantPrincipal.addToPrincipalPolicy(
-      new PolicyStatement({
-        actions: ['route53:ListHostedZonesByName'],
-        resources: ['*'],
-        effect: Effect.ALLOW,
-      })
-    );
-
-    pipeline.codePipeline.addToRolePolicy(
-      new PolicyStatement({
-        actions: ['route53:ListHostedZonesByName'],
-        resources: ['*'],
-        effect: Effect.ALLOW,
-      })
-    );
-    return pipeline;
   }
 
   private buildAction(

@@ -4,6 +4,7 @@ import { WebsiteStack } from '../stacks/website';
 export interface WebsiteStageProps extends StageProps {
   domainName: string;
   hostedZoneName: string;
+  hostedZoneId: string;
 }
 
 export class WebsiteStage extends Stage {
