@@ -3,6 +3,7 @@ import { WebsiteStack } from '../stacks/website';
 
 export interface WebsiteStageProps extends StageProps {
   domainName: string;
+  hostedZoneId: string;
   hostedZoneName: string;
 }
 
